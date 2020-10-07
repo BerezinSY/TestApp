@@ -16,10 +16,19 @@ class DetailTableViewController: UITableViewController {
     //MARK: - Properties
     var sample: TestData?
     private var image: UIImage? {
-        guard
-            let imageUrl = sample?.data?.url,
-            let imageData = NetworkService.shared.getImageData(fromUrlString: imageUrl),
-            let image = UIImage(data: imageData) else { return UIImage(systemName: "photo")}
+        var imageData: Data?
+        var image: UIImage?
+        guard let imageUrl = sample?.data?.url else { return UIImage(systemName: "photo")}
+        
+        DispatchQueue.global(qos: .background).async {
+            imageData = NetworkService.shared.getImageData(fromUrlString: imageUrl)
+            if imageData != nil {
+                DispatchQueue.main.async {
+                    image = UIImage(data: imageData!)
+                    self.photo.image = image
+                }
+            }
+        }
         return image
     }
 
@@ -35,5 +44,4 @@ class DetailTableViewController: UITableViewController {
         guard let variantVC = navigationVC.viewControllers.first as? VariantTableViewController else { return }
         variantVC.sample = sample
     }
-    
 }
